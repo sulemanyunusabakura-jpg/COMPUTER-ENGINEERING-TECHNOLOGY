@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NBTE Grade Sheet & CGPA Calculator</title>
   
-  <!-- LINK TO PWA MANIFEST -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#4f46e5" />
 
@@ -40,6 +39,14 @@
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
       margin-bottom: 20px;
       border-top: 4px solid var(--primary);
+    }
+
+    /* INSTALL APP BANNER BUTTON */
+    #installCard {
+      display: none;
+      background: #e0e7ff;
+      border-top: 4px solid var(--primary);
+      text-align: center;
     }
 
     h2, h3 { margin-top: 0; color: var(--primary); font-size: 1.25rem; }
@@ -149,6 +156,13 @@
 </head>
 <body>
 
+  <!-- INSTALL PROMPT CARD -->
+  <div class="card" id="installCard">
+    <h3 style="margin-bottom:6px;">Install App for Offline Use</h3>
+    <p style="font-size:0.85rem; margin-top:0;">Download this app to your phone so it works anytime without internet.</p>
+    <button type="button" id="btnInstallApp">📥 Install App Now</button>
+  </div>
+
   <div class="card">
     <h2>Student Details</h2>
     <div class="form-group">
@@ -157,7 +171,7 @@
     </div>
     <div class="form-group">
       <label for="regNo">Registration Number</label>
-      <input type="text" id="regNo" placeholder/>
+      <input type="text" id="regNo" placeholder />
     </div>
     <div class="form-group">
       <label for="dept">Department</label>
@@ -187,7 +201,7 @@
     <div class="sheet-header">
       <div>
         <h2 style="margin:0; color:#000; font-size:1.1rem; text-transform:uppercase;">ABDU GUSAU POLYTECHNIC TALATA MAFARA</h2>
-        <h3 style="margin:3px 0; font-size:0.8rem; font-weight:bold;">STUDENTS OF COMPUTER ENGINNERING TECHNOLOGY</h3>
+        <h3 style="margin:3px 0; font-size:0.8rem; font-weight:bold;">STUDENTS OF COMPUTER ENGINEERING TECHNOLOGY</h3>
         <p style="margin:0; font-size:0.75rem;">NBTE STANDARDIZED 4.0 SCALE EVALUATION</p>
       </div>
     </div>
@@ -326,12 +340,34 @@
       document.getElementById('btnCalculate').addEventListener('click', calculateAndGenerate);
     });
 
-    // REGISTER SERVICE WORKER FOR OFFLINE FUNCTIONALITY
+    // PWA INSTALL PROMPT & SERVICE WORKER
+    let deferredPrompt;
+    const installCard = document.getElementById('installCard');
+    const btnInstallApp = document.getElementById('btnInstallApp');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installCard.style.display = 'block';
+    });
+
+    btnInstallApp.addEventListener('click', () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            installCard.style.display = 'none';
+          }
+          deferredPrompt = null;
+        });
+      }
+    });
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-          .then(() => console.log('Service Worker Registered Successfully (Offline Ready)'))
-          .catch((err) => console.log('Service Worker Failed:', err));
+          .then((reg) => console.log('SW Registered:', reg.scope))
+          .catch((err) => console.log('SW Registration Failed:', err));
       });
     }
   </script>
